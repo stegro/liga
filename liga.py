@@ -249,7 +249,7 @@ add_cmd("help", "h", "See this help.", help_cmd)
 def repl(table):
 	global commands
 	while len(table.matches_remaining) > 0:
-		input = raw_input("(league)> ")
+		input = raw_input("(liga)> ")
 		input = input.strip()
 		if input in commands:
 			commands[input](table)
@@ -259,7 +259,7 @@ def repl(table):
 	table.print_league_table()
 
 def usage():
-	print("league.py (-n <League Description File>|-l <League Save File>)")
+	print("liga.py (-n <League Description File>|-l <League Save File>)")
 	exit(1)
 		
 # Start
