@@ -27,6 +27,7 @@ class Match:
 		if (self.drawn):
 			self.winner.drawn -= 1
 			self.loser.drawn -= 1
+			self.drawn = False
 		else:
 			self.winner.won -= 1
 			self.loser.lost -= 1
@@ -71,6 +72,9 @@ class Team:
 	def __repr__(self):
 		return "%s %d %d %d %d" % (self.name, self.won, self.lost, self.drawn, self.rounds)
 
+	def __lt__(self, other):
+		return self
+
 class Table:
 	def __init__(self, team_file):
 		self.teams_lookup = {}
@@ -94,11 +98,11 @@ class Table:
 		self.generate_matches(num_matches)
 
 	def generate_matches(self, num_matches):
-		for i in xrange(0, len(self.teams)):
+		for i in range(0, len(self.teams)):
 			team1 = self.teams[i]
-			for j in xrange(i+1, len(self.teams)):
+			for j in range(i+1, len(self.teams)):
 				team2 = self.teams[j]
-				for k in xrange(0, num_matches):
+				for k in range(0, num_matches):
 					self.matches_remaining.append(Match(team1, team2))
 		random.shuffle(self.matches_remaining)
 
@@ -121,7 +125,7 @@ def get_int(text):
 	v = -1
 	while v == -1:
 		try:
-			v = int(raw_input(text))
+			v = int(input(text))
 		except ValueError:
 			print("Try entering a number.")
 	return v
@@ -136,8 +140,8 @@ def cmd_match(table):
 	while (not accepted):
 		match = table.matches_remaining[current]
 		print("Match: " + str(match) + " OK?")
-		input = raw_input("y/n > ")
-		if (input == "y"):
+		res = input("y/n > ")
+		if (res == "y"):
 			accepted = True
 			table.matches_remaining.pop(current)
 			table.matches_played.insert(0, match)
@@ -175,21 +179,21 @@ def cmd_adjust(table):
 		for match in table.matches_played[idx:idx+5]:
 			print(str(idx + counter) + ": " + str(match))
 			counter += 1
-		input = raw_input("> ") 
-		if (input == "n"):
+		res = input("> ") 
+		if (res == "n"):
 			idx += 5
 			if (idx > len(table.matches_played)):
 				idx -= 5
-		elif (input == "p"):
+		elif (res == "p"):
 			idx -= 5
 			if (idx < 0):
 				idx = 0
-		elif (input == "c"):
+		elif (res == "c"):
 			return
 		else:
 			target = -1
 			try:
-				target = int(input)
+				target = int(res)
 			except ValueError:
 				print("Try entering a number, 'n', 'p', or 'c'.")
 			if (target < 0 or target >= len(table.matches_played)):
@@ -207,7 +211,7 @@ def cmd_adjust(table):
 	print("Match updated.")
 
 def cmd_save(table):
-	savename = raw_input("Filename? ")
+	savename = input("Filename? ")
 	savename = savename.strip()
 	f = open(savename, "wb")
 	pickle.dump(table, f, protocol=2)
@@ -249,10 +253,10 @@ add_cmd("help", "h", "See this help.", help_cmd)
 def repl(table):
 	global commands
 	while len(table.matches_remaining) > 0:
-		input = raw_input("(liga)> ")
-		input = input.strip()
-		if input in commands:
-			commands[input](table)
+		cmd = input("(liga)> ")
+		cmd = cmd.strip()
+		if cmd in commands:
+			commands[cmd](table)
 		else:
 			print("Unrecognised command. Type 'help' or 'h' to see commands.")
 	print("Finished! Final standings:-")
