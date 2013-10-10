@@ -2,6 +2,8 @@
 
 import random, sys, pickle
 
+# Classes
+
 class Match:
 	def __init__(self, home, away):
 		self.home = home
@@ -66,7 +68,23 @@ class Table:
 					self.matches_remaining.append(Match(team1, team2))
 		random.shuffle(self.matches_remaining)
 
+	def print_league_table(self):
+		rankings = []
+		for team in self.teams:
+			rankings.append((team.getPoints(), team.rounds, team))
+		rankings = sorted(rankings, reverse=True)
+
+		print("%5s %10s %3s %3s %3s %3s %5s %5s" % ("rank", "name", "M", "W", "D", "L", "P", "R"))
+
+		rank = 1
+		for (points, rounds, team) in rankings:
+			print("%5d %10s %3d %3d %3d %3d %5d %5d" % (rank, team.name, team.getPlayed(), team.won, team.drawn, team.lost, points, rounds))
+			rank += 1
+
 # Functions
+
+def cmd_table(table):
+	table.print_league_table()
 
 def cmd_match(table):
 	current = 0
@@ -114,13 +132,13 @@ def cmd_match(table):
 def cmd_save(table):
 	savename = raw_input("Filename? ")
 	savename = savename.strip()
-	f = open(savename, "w")
-	pickle.dump(table, f)
+	f = open(savename, "wb")
+	pickle.dump(table, f, protocol=2)
 	f.close()
 	print("Saved.")
 
 def cmd_quit(table):
-	print("Bye..")
+	print("Bye!")
 	exit(0)
 
 commands = {}
@@ -137,10 +155,11 @@ def help_cmd(table):
 	for cmdhelp in commands_help:
 		print(cmdhelp)
 
+add_cmd("table", "t", "Show current league table standings.", cmd_table)
 add_cmd("match", "m", "Request for a match to play.", cmd_match)
 add_cmd("save", "s", "Save the league state.", cmd_save)
 add_cmd("quit", "q", "Quit.", cmd_quit)
-add_cmd("help", "h", "See this help...", help_cmd)
+add_cmd("help", "h", "See this help.", help_cmd)
 
 def repl(table):
 	global commands
@@ -151,6 +170,12 @@ def repl(table):
 			commands[input](table)
 		else:
 			print("Unrecognised command. Type 'help' or 'h' to see commands.")
+	print("Finished! Final standings:-")
+	table.print_league_table()
+
+def usage():
+	print("league.py (-n <League Description File>|-l <League Save File>)")
+	exit(1)
 		
 # Start
 	
@@ -160,10 +185,12 @@ if (len(sys.argv) < 3):
 the_table = None
 if (sys.argv[1] == "-n"):
 	the_table = Table(sys.argv[2])
-elif (sys.argv[1] == "-r"):
-	f = open(sys.argv[2])
+elif (sys.argv[1] == "-l"):
+	f = open(sys.argv[2], "rb")
 	the_table = pickle.load(f)	
 	f.close()
+	print("Current standings:-")
+	the_table.print_league_table()
 else:
 	usage()
 
