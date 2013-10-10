@@ -6,11 +6,17 @@ class Match:
 	def __init__(self, home, away):
 		self.home = home
 		self.away = away
+		self.home_score = 0
+		self.away_score = 0
 		self.played = False
+		self.drawn = False
 		self.winner = None
+		self.loser = None
 
 	def __repr__(self):
-		return "%s%s vs. %s%s" % (self.home.name, ("*" if self.winner==self.home else ""), ("*" if self.winner==self.away else ""), self.away.name)
+		if (self.played):
+			return "%s %d - %d %s" % (self.home.name, self.home_score, self.away_score, self.away.name)
+		return "%s vs. %s" % (self.home.name, self.away.name)
 
 class Team:
 	def __init__(self, name):
@@ -63,8 +69,47 @@ class Table:
 # Functions
 
 def cmd_match(table):
-	match = table.matches_remaining.pop()
-	print("Played " + str(match))
+	current = 0
+	accepted = False
+	match = None
+	while (not accepted):
+		match = table.matches_remaining[current]
+		print("Match: " + str(match) + " OK?")
+		input = raw_input("y/n > ")
+		if (input == "y"):
+			accepted = True
+			table.matches_remaining.pop(current)
+			table.matches_played.append(match)
+		else:
+			current += 1
+	
+	print("Play " + str(match) + "!")
+	home_score = int(raw_input("Insert score for left player > "))
+	away_score = int(raw_input("Insert score for right player > "))
+
+	match.home_score = home_score
+	match.home.rounds += home_score
+	match.away_score = away_score
+	match.away.rounds += away_score
+
+	if (home_score == away_score):
+		match.drawn = True
+
+	if (home_score >= away_score):
+		match.winner = match.home
+		match.loser = match.away
+	else:
+		match.loser = match.home
+		match.winner = match.away
+
+	if (match.drawn):
+		match.home.drawn += 1
+		match.away.drawn += 1
+		print("A draw!")
+	else:
+		match.winner.won += 1
+		match.loser.lost += 1
+		print(match.winner.name + " wins!")
 
 def cmd_save(table):
 	savename = raw_input("Filename? ")
