@@ -170,9 +170,11 @@ def cmd_adjust(table):
 	idx = 0
 	match = None
 	while (not found_match):
-		print("Which match do you want to adjust? (Type 'n' to get next 5, or 'p' to get previous 5.)")
+		print("Which match do you want to adjust? (Type 'n' to get next 5, or 'p' to get previous 5, or 'c' to cancel this.)")
+		counter = 0
 		for match in table.matches_played[idx:idx+5]:
-			print(str(idx) + ": " + str(match))
+			print(str(idx + counter) + ": " + str(match))
+			counter += 1
 		input = raw_input("> ") 
 		if (input == "n"):
 			idx += 5
@@ -182,14 +184,19 @@ def cmd_adjust(table):
 			idx -= 5
 			if (idx < 0):
 				idx = 0
+		elif (input == "c"):
+			return
 		else:
 			target = -1
 			try:
 				target = int(input)
 			except ValueError:
-				print("Try entering a number, 'n', or 'p'.")
-			found_match = True
-			match = table.matches_played[target]
+				print("Try entering a number, 'n', 'p', or 'c'.")
+			if (target < 0 or target >= len(table.matches_played)):
+				print("Try entering a valid number, 'n', 'p', or 'c'.")
+			else:
+				found_match = True
+				match = table.matches_played[target]
 	
 	match.undo()
 
@@ -211,6 +218,10 @@ def cmd_quit(table):
 	print("Bye!")
 	exit(0)
 
+def cmd_details(table):
+	print("Matches played: " + str(len(table.matches_played)))
+	print("Matches remaining: " + str(len(table.matches_remaining)))
+
 commands = {}
 commands_help = []
 def add_cmd(longstr, shortstr, helpstr, cmd):
@@ -229,6 +240,7 @@ add_cmd("table", "t", "Show current league table standings.", cmd_table)
 add_cmd("match", "m", "Request for a match to play.", cmd_match)
 add_cmd("fixtures", "f", "Display 5 upcoming fixtures.", cmd_fixtures)
 add_cmd("results", "r", "Display 5 previous results.", cmd_results)
+add_cmd("details", "d", "Show details about the league.", cmd_details)
 add_cmd("adjust", "a", "Adjust a score for a previous match.", cmd_adjust)
 add_cmd("save", "s", "Save the league state.", cmd_save)
 add_cmd("quit", "q", "Quit.", cmd_quit)
@@ -237,7 +249,7 @@ add_cmd("help", "h", "See this help.", help_cmd)
 def repl(table):
 	global commands
 	while len(table.matches_remaining) > 0:
-		input = raw_input("(%d)> " % len(table.matches_remaining))
+		input = raw_input("(league)> ")
 		input = input.strip()
 		if input in commands:
 			commands[input](table)
