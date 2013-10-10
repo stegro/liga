@@ -74,11 +74,11 @@ class Table:
 			rankings.append((team.getPoints(), team.rounds, team))
 		rankings = sorted(rankings, reverse=True)
 
-		print("%5s %10s %3s %3s %3s %3s %5s %5s" % ("rank", "name", "M", "W", "D", "L", "P", "R"))
+		print("%5s %10s %3s %3s %3s %3s %5s %5s" % ("rank", "name", "M", "W", "D", "L", "R", "P"))
 
 		rank = 1
 		for (points, rounds, team) in rankings:
-			print("%5d %10s %3d %3d %3d %3d %5d %5d" % (rank, team.name, team.getPlayed(), team.won, team.drawn, team.lost, points, rounds))
+			print("%5d %10s %3d %3d %3d %3d %5d %5d" % (rank, team.name, team.getPlayed(), team.won, team.drawn, team.lost, rounds, points))
 			rank += 1
 
 # Functions
@@ -97,13 +97,30 @@ def cmd_match(table):
 		if (input == "y"):
 			accepted = True
 			table.matches_remaining.pop(current)
-			table.matches_played.append(match)
+			table.matches_played.insert(0, match)
 		else:
 			current += 1
 	
 	print("Play " + str(match) + "!")
-	home_score = int(raw_input("Insert score for left player > "))
-	away_score = int(raw_input("Insert score for right player > "))
+
+	home_score = -1
+	while home_score == -1:
+		try:
+			home_score = int(raw_input("Insert score for left player > "))
+		except ValueError:
+			print("Try entering a number.")
+
+	away_score = -1
+	while away_score == -1:
+		try:
+			away_score = int(raw_input("Insert score for right player > "))
+		except ValueError:
+			print("Try entering a number.")
+
+	
+	
+
+	match.played = True
 
 	match.home_score = home_score
 	match.home.rounds += home_score
@@ -128,6 +145,14 @@ def cmd_match(table):
 		match.winner.won += 1
 		match.loser.lost += 1
 		print(match.winner.name + " wins!")
+
+def cmd_fixtures(table):
+	for match in table.matches_remaining[0:5]:
+		print(match)
+
+def cmd_results(table):
+	for match in table.matches_played[0:5]:
+		print(match)
 
 def cmd_save(table):
 	savename = raw_input("Filename? ")
@@ -157,6 +182,9 @@ def help_cmd(table):
 
 add_cmd("table", "t", "Show current league table standings.", cmd_table)
 add_cmd("match", "m", "Request for a match to play.", cmd_match)
+add_cmd("fixtures", "f", "Display 5 upcoming fixtures.", cmd_fixtures)
+add_cmd("results", "r", "Display 5 previous results.", cmd_results)
+add_cmd("adjust", "a", "Adjust a score for a previous match", cmd_adjust)
 add_cmd("save", "s", "Save the league state.", cmd_save)
 add_cmd("quit", "q", "Quit.", cmd_quit)
 add_cmd("help", "h", "See this help.", help_cmd)
