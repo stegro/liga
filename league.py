@@ -20,6 +20,40 @@ class Match:
 			return "%s %d - %d %s" % (self.home.name, self.home_score, self.away_score, self.away.name)
 		return "%s vs. %s" % (self.home.name, self.away.name)
 
+	def undo(self):
+		self.home.rounds -= self.home_score
+		self.away.rounds -= self.away_score
+
+		if (self.drawn):
+			self.winner.drawn -= 1
+			self.loser.drawn -= 1
+		else:
+			self.winner.won -= 1
+			self.loser.lost -= 1
+
+	def finish(self, home_score, away_score):
+		self.home_score = home_score
+		self.home.rounds += home_score
+		self.away_score = away_score
+		self.away.rounds += away_score
+
+		if (home_score == away_score):
+			self.drawn = True
+
+		if (home_score >= away_score):
+			self.winner = self.home
+			self.loser = self.away
+		else:
+			self.loser = self.home
+			self.winner = self.away
+
+		if (self.drawn):
+			self.home.drawn += 1
+			self.away.drawn += 1
+		else:
+			self.winner.won += 1
+			self.loser.lost += 1
+
 class Team:
 	def __init__(self, name):
 		self.name = name
@@ -83,6 +117,15 @@ class Table:
 
 # Functions
 
+def get_int(text):
+	v = -1
+	while v == -1:
+		try:
+			v = int(raw_input(text))
+		except ValueError:
+			print("Try entering a number.")
+	return v
+
 def cmd_table(table):
 	table.print_league_table()
 
@@ -103,47 +146,15 @@ def cmd_match(table):
 	
 	print("Play " + str(match) + "!")
 
-	home_score = -1
-	while home_score == -1:
-		try:
-			home_score = int(raw_input("Insert score for left player > "))
-		except ValueError:
-			print("Try entering a number.")
-
-	away_score = -1
-	while away_score == -1:
-		try:
-			away_score = int(raw_input("Insert score for right player > "))
-		except ValueError:
-			print("Try entering a number.")
-
-	
-	
+	home_score = get_int("Insert score for left player > ")
+	away_score = get_int("Insert score for right player > ")
 
 	match.played = True
 
-	match.home_score = home_score
-	match.home.rounds += home_score
-	match.away_score = away_score
-	match.away.rounds += away_score
-
-	if (home_score == away_score):
-		match.drawn = True
-
-	if (home_score >= away_score):
-		match.winner = match.home
-		match.loser = match.away
-	else:
-		match.loser = match.home
-		match.winner = match.away
-
+	match.finish(home_score, away_score)
 	if (match.drawn):
-		match.home.drawn += 1
-		match.away.drawn += 1
 		print("A draw!")
 	else:
-		match.winner.won += 1
-		match.loser.lost += 1
 		print(match.winner.name + " wins!")
 
 def cmd_fixtures(table):
@@ -153,6 +164,40 @@ def cmd_fixtures(table):
 def cmd_results(table):
 	for match in table.matches_played[0:5]:
 		print(match)
+
+def cmd_adjust(table):
+	found_match = False
+	idx = 0
+	match = None
+	while (not found_match):
+		print("Which match do you want to adjust? (Type 'n' to get next 5, or 'p' to get previous 5.)")
+		for match in table.matches_played[idx:idx+5]:
+			print(str(idx) + ": " + str(match))
+		input = raw_input("> ") 
+		if (input == "n"):
+			idx += 5
+			if (idx > len(table.matches_played)):
+				idx -= 5
+		elif (input == "p"):
+			idx -= 5
+			if (idx < 0):
+				idx = 0
+		else:
+			target = -1
+			try:
+				target = int(input)
+			except ValueError:
+				print("Try entering a number, 'n', or 'p'.")
+			found_match = True
+			match = table.matches_played[target]
+	
+	match.undo()
+
+	home_score = get_int("Insert NEW score for left player > ")
+	away_score = get_int("Insert NEW score for right player > ")
+
+	match.finish(home_score, away_score)
+	print("Match updated.")
 
 def cmd_save(table):
 	savename = raw_input("Filename? ")
@@ -184,7 +229,7 @@ add_cmd("table", "t", "Show current league table standings.", cmd_table)
 add_cmd("match", "m", "Request for a match to play.", cmd_match)
 add_cmd("fixtures", "f", "Display 5 upcoming fixtures.", cmd_fixtures)
 add_cmd("results", "r", "Display 5 previous results.", cmd_results)
-add_cmd("adjust", "a", "Adjust a score for a previous match", cmd_adjust)
+add_cmd("adjust", "a", "Adjust a score for a previous match.", cmd_adjust)
 add_cmd("save", "s", "Save the league state.", cmd_save)
 add_cmd("quit", "q", "Quit.", cmd_quit)
 add_cmd("help", "h", "See this help.", help_cmd)
