@@ -84,6 +84,8 @@ class Table:
 		self.load_teams(team_file)
 
 	def load_teams(self, team_file):
+                """The team_file is a text file: The first line is the number of matches,
+                followed by the names of all teams, one name in each line."""
 		num_matches = 0
 		f = open(team_file, "r")
 		for line in f.readlines():
@@ -125,7 +127,7 @@ def get_int(text):
 	v = -1
 	while v == -1:
 		try:
-			v = int(input(text))
+			v = int(raw_input(text))
 		except ValueError:
 			print("Try entering a number.")
 	return v
@@ -140,7 +142,7 @@ def cmd_match(table):
 	while (not accepted):
 		match = table.matches_remaining[current]
 		print("Match: " + str(match) + " OK?")
-		res = input("y/n > ")
+		res = raw_input("y/n > ")
 		if (res == "y"):
 			accepted = True
 			table.matches_remaining.pop(current)
@@ -179,7 +181,7 @@ def cmd_adjust(table):
 		for match in table.matches_played[idx:idx+5]:
 			print(str(idx + counter) + ": " + str(match))
 			counter += 1
-		res = input("> ") 
+		res = raw_input("> ") 
 		if (res == "n"):
 			idx += 5
 			if (idx > len(table.matches_played)):
@@ -211,7 +213,7 @@ def cmd_adjust(table):
 	print("Match updated.")
 
 def cmd_save(table):
-	savename = input("Filename? ")
+	savename = raw_input("Filename? ")
 	savename = savename.strip()
 	f = open(savename, "wb")
 	pickle.dump(table, f, protocol=2)
@@ -253,7 +255,8 @@ add_cmd("help", "h", "See this help.", help_cmd)
 def repl(table):
 	global commands
 	while len(table.matches_remaining) > 0:
-		cmd = input("(liga)> ")
+		cmd = raw_input("(liga)> ")
+                
 		cmd = cmd.strip()
 		if cmd in commands:
 			commands[cmd](table)
@@ -263,7 +266,13 @@ def repl(table):
 	table.print_league_table()
 
 def usage():
-	print("liga.py (-n <League Description File>|-l <League Save File>)")
+	print("Usage: liga.py (-n <League Description File>|-l <League Save File>)")
+        print
+        print("You want to play Pingpong with your friends? This")
+        print("interactive script helps you to manage a liga.")
+        print
+        print(" -n    create a new league from a description file ")
+        print(" -l    load a league from a save file ")
 	exit(1)
 		
 # Start
@@ -276,7 +285,7 @@ if (sys.argv[1] == "-n"):
 	the_table = Table(sys.argv[2])
 elif (sys.argv[1] == "-l"):
 	f = open(sys.argv[2], "rb")
-	the_table = pickle.load(f)	
+	the_table = pickle.load(f)
 	f.close()
 	print("Current standings:-")
 	the_table.print_league_table()
