@@ -152,12 +152,11 @@ def cmd_match(table):
 	
 	print("Play " + str(match) + "!")
 
-	home_score = get_int("Insert score for left player > ")
-	away_score = get_int("Insert score for right player > ")
-
+	home_score = get_int("Insert score for " + match.home.name + " > ")
+	away_score = get_int("Insert score for " + match.away.name + " > ")
 	match.played = True
-
 	match.finish(home_score, away_score)
+        
 	if (match.drawn):
 		print("A draw!")
 	else:
@@ -253,17 +252,23 @@ add_cmd("quit", "q", "Quit.", cmd_quit)
 add_cmd("help", "h", "See this help.", help_cmd)
 
 def repl(table):
-	global commands
-	while len(table.matches_remaining) > 0:
-		cmd = raw_input("(liga)> ")
-                
-		cmd = cmd.strip()
-		if cmd in commands:
-			commands[cmd](table)
-		else:
-			print("Unrecognised command. Type 'help' or 'h' to see commands.")
-	print("Finished! Final standings:-")
+        global commands
+        while len(table.matches_remaining) > 0:
+                try:
+                        cmd = raw_input("(liga)> ")
+                except EOFError:
+                        print
+                        commands["quit"](table)
+                cmd = cmd.strip()
+                if cmd in commands:
+                        commands[cmd](table)
+                else:
+                        print("Unrecognised command. Type 'help' or 'h' to see commands.")
+
+        print()
+        print("------- Season finished! Final standings: --------")
 	table.print_league_table()
+        print("--------------------------------------------------")
 
 def usage():
 	print("Usage: liga.py (-n <League Description File>|-l <League Save File>)")
@@ -292,4 +297,6 @@ elif (sys.argv[1] == "-l"):
 else:
 	usage()
 
+# go interactive
+help_cmd(the_table)
 repl(the_table)
