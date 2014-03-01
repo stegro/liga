@@ -253,7 +253,7 @@ def repl(table):
                 try:
                         cmd = input("(liga)> ")
                 except EOFError:
-                        print
+                        print()
                         commands["quit"](table)
                 cmd = cmd.strip()
                 if cmd in commands:
@@ -268,10 +268,10 @@ def repl(table):
 
 def usage():
         print("Usage: liga.py (-n <League Description File>|-l <League Save File>)")
-        print
+        print()
         print("You want to play Pingpong with your friends? This")
-        print("interactive script helps you to manage a liga.")
-        print
+        print("interactive script helps you to manage your liga.")
+        print()
         print(" -n    create a new league from a description file ")
         print(" -l    load a league from a save file ")
         exit(1)
